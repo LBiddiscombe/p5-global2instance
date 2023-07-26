@@ -10,17 +10,20 @@ var instance = 'sketch'
 const ast2code = (ast, options = opts) => escodegen.generate(ast, options.escodegen).code
 const code2ast = (code, options = opts) => esprima.parseModule(code, options.esprima)
 
-function printAST (ast) {
+function printAST(ast) {
   const asts = estemplate('%= body%', { body: ast })
   console.log(ast2code(asts))
 }
 
 
-function wrapP5Scope (ast) {
+function wrapP5Scope(ast) {
+
   let code = ast2code(ast)
   for (const p5var of p5vars) {
-    code = code.replace(new RegExp(`([^.\\w])(${p5var})[;\\s]?`, 'gm'), (match, p1, p2) => `${p1}${instance}.${p2}`)
+    const regex = new RegExp(`([^\\.\\w])(${p5var})([;\\s]*)`, 'gm');
+    code = code.replace(regex, (match, p1, p2, p3) => `${p1}${instance}.${p5var}${p3}`);
   }
+
   for (const p5func of p5funcs) {
     code = code.replace(new RegExp(`([^.\\w])(${p5func}[(])`, 'gm'), (match, p1, p2) => `${p1}${instance}.${p2}`)
   }
@@ -28,7 +31,7 @@ function wrapP5Scope (ast) {
 }
 
 
-function wrapP5Func (ast) {
+function wrapP5Func(ast) {
   if (!['VariableDeclaration', 'FunctionDeclaration'].includes(ast.type)) {
     throw Error(`wrong type ${ast.type}`)
   }
@@ -50,22 +53,32 @@ const wrapP5Funcs = ASTs => ASTs.map(wrapP5Func)
 module.exports = function (sourceCode, options = opts) {
   instance = options.instance
   const templateCode = `
-  export default function (${instance}) {
-    %= p5Main %
-  }
+%= p5Main %
   `
 
   // https://github.com/estools/estemplate#advanced-generation-with-source-map
   const template = estemplate.compile(templateCode, options.esprima)
   const source = esprima.parseModule(sourceCode, options.esprima)
 
-  let vars = esquery(source, 'VariableDeclaration')
+  let vars = esquery(source, 'Program > VariableDeclaration')
   let funcs = esquery(source, 'FunctionDeclaration')
+
   let ast = template({
     p5Main: vars.concat(wrapP5Funcs(funcs))
   })
 
   let output = escodegen.generate(ast, options.escodegen).code
-  if (output.includes('p5.')) output = `import p5 from 'p5'\n${output}`
+  //if (output.includes('p5.')) output = `import p5 from 'p5'\n${output}`
+  output = `
+  <script lang="ts">
+	import P5, { type Sketch } from 'p5-svelte';
+
+	const sketch: Sketch = (${instance}) => {
+    ${output}
+  }
+  </script>
+
+  <P5 {sketch} />
+  `
   return output
 }

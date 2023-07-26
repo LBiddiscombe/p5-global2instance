@@ -65,6 +65,7 @@ const p5callFuncs = [
   'quad',
   'rect',
   'triangle',
+  'circle',
 
   // Shape.3D_Models
   'loadModel',
@@ -207,6 +208,7 @@ const p5callFuncs = [
   'saveStrings',
   'saveTable',
   'downloadFile',
+  'saveGif',
 
   // Math
   'createVector',
@@ -223,6 +225,12 @@ const p5callFuncs = [
   'degrees',
   'radians',
   'angleMode',
+  'sin',
+  'cos',
+  'tan',
+  'asin',
+  'acos',
+  'atan',
 
   // Typography
   'textAlign',
@@ -276,6 +284,7 @@ const p5vars = [
   'QUARTER_PI',
   'TAU',
   'TWO_PI',
+  'WEBGL',
 
   // Environment
   'frameCount',
@@ -286,6 +295,7 @@ const p5vars = [
   'windowHeight',
   'width',
   'height',
+  'drawingContext',
 
   // Events.Mobile
   'deviceOrientation',
@@ -318,7 +328,6 @@ const p5vars = [
   'pwinMouseY',
   'mouseButton',
   'mouseIsPressed',
-
   'pixels'
 ]
 
