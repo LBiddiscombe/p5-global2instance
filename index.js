@@ -72,10 +72,17 @@ module.exports = function (sourceCode, options = opts) {
   output = `
   <script lang="ts">
 	import P5, { type Sketch } from 'p5-svelte';
+  import { scaleCanvas } from '$lib/utils';
 
 	const sketch: Sketch = (${instance}) => {
     ${output}
   }
+
+  function gotRef(e: Event) {
+		const parentNode = e.detail;
+		const canvas = e.detail.childNodes[0];
+		scaleCanvas(parentNode, canvas);
+	}
   </script>
 
   <P5 {sketch} />
